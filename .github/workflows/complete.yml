@@ -1,0 +1,23 @@
+name: Build Example
+
+on:
+  workflow_dispatch:
+
+jobs:
+ dependencies:
+  runs-on: ubuntu-latest
+  steps:
+  - name: Checkout code
+    uses: actions/checkout@v4 
+
+  - name: Set up Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: '18'
+
+  - name: Bundle application into ZIP
+    run: |
+      zip -r app-bundle.zip . -x "*.git*"
+
+  - name: Run unit tests
+    run: npm test -- --coverage
