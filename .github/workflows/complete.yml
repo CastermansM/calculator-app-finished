@@ -19,5 +19,15 @@ jobs:
     run: |
       zip -r app-bundle.zip . -x "*.git*"
 
-  - name: Run unit tests
-    run: npm test -- --coverage
+  - name: Install coverage tool
+    run: npm install nyc --save-dev
+
+  - name: Run tests with coverage
+    run: npx nyc npm test
+  
+  - name: Upload test report
+    uses: actions/upload-artifact@v4
+    with:
+      name: coverage
+      path: coverage/
+
