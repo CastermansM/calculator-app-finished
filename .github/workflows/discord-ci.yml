@@ -47,8 +47,9 @@ jobs:
       - name: Extract coverage percentage
         id: coverage
         run: |
-          COVERAGE=$(grep -m1 -oP '(?<=lines\s*:\s*)\d+(\.\d+)?' coverage/lcov-report/index.html)
+          COVERAGE=$(sed -n 's/.*lines[^0-9]*\([0-9]\{1,3\}\(\.[0-9]\+\)\?\).*/\1/p' coverage/lcov-report/index.html | head -n 1)
           echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+
 
       # -------------------------
       # PR COMMENT SECTION
