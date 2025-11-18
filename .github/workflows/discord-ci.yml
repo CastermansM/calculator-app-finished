@@ -1,0 +1,63 @@
+name: CI Node.js + Discord Notifications
+
+on:
+  push:
+    branches: ["main", "feature/*"]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # 4. Run unit tests
+      - name: Run unit tests
+        run: npm test
+
+      # 5. Install coverage tool
+      - name: Install coverage tool
+        run: npm install nyc --save-dev
+
+      # 6. Generate coverage report
+      - name: Run tests with coverage
+        run: npx nyc --reporter=lcov npm test
+
+      # 7. Upload artifact
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+
+      # 8. Extract coverage percentage for PR comment
+      - name: Extract coverage percentage
+        id: coverage
+        run: |
+          COVERAGE=$(grep -m1 -oP '(?<=lines\s*:\s*)\d+(\.\d+)?' coverage/lcov-report/index.html)
+          echo "percentage=$COVERAGE" >> $GITHUB_OUTPUT
+
+      # -------------------------
+      # PR COMMENT SECTION
+      # -------------------------
+      - name: Comment on PR with coverage
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            **CI Status:** ✔️ Completed  
