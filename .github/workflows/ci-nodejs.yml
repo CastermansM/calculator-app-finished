@@ -1,0 +1,45 @@
+name: CI Node.js
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout code van de opgegeven repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: PXL-2TIN-DevOps-Resources/calculator-app-finished
+
+      # 2. Node.js installeren
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # 3. Dependencies installeren
+      - name: Install dependencies
+        run: npm install
+
+      # 4. Unit tests uitvoeren
+      - name: Run unit tests
+        run: npm test
+
+      # 5. Coverage genereren via nyc
+      - name: Install coverage tool
+        run: npm install nyc --save-dev
+
+      - name: Run tests with coverage
+        run: npx nyc --reporter=lcov npm test
+
+      # 6. Coverage artifact uploaden
+      - name: Upload test report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
